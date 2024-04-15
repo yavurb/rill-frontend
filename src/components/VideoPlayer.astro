@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
   </video>
   <div class="flex justify-center">
     <Button id="broadcast">Broadcast</Button>
+    <Button id="join">Join</Button>
   </div>
 </div>
 
 <script>
   let broadcastButton = document.getElementById("broadcast");
+  let joinButton = document.getElementById("join");
 
   if (broadcastButton === null) {
     throw new Error("Broadcast button not found");
@@ -33,7 +35,7 @@ import { Button } from "@/components/ui/button";
         sd = btoa(JSON.stringify(pc.localDescription))
         console.log('sd', sd)
 
-        let response = await fetch("http://localhost:8080", {
+        let response = await fetch("http://localhost:8910/broadcaster", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -72,4 +74,60 @@ import { Button } from "@/components/ui/button";
     let offer = await pc.createOffer()
     pc.setLocalDescription(offer)
   });
+
+  joinButton?.addEventListener("click", async () => {
+    console.log("Joining...");
+    let pc = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: 'stun:stun.l.google.com:19302'
+        }
+      ]
+    });
+    pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState);
+    pc.onicecandidate = async event => {
+      if (event.candidate === null) {
+        let sd = btoa(JSON.stringify(pc.localDescription))
+        console.log('sd', sd)
+
+        let response = await fetch("http://localhost:8910/viewer", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sdp: sd
+          })
+        })
+
+        console.log('response', response)
+
+        if (response.ok) {
+          console.log('serverSD')
+          let serverSD = await response.json();
+
+          console.log('serverSD', serverSD)
+
+          pc.setRemoteDescription(JSON.parse(atob(serverSD.sdp)));
+        }
+      }
+    }
+
+    pc.ontrack = (event) => {
+      const video: HTMLVideoElement = document.getElementById("rill-player") as HTMLVideoElement;
+
+      if (video === null) {
+        throw new Error("Video element not found");
+      }
+
+      video.srcObject = event.streams[0];
+      video.autoplay = true;
+      video.controls = true;
+    }
+
+    pc.addTransceiver('video')
+    let offer = await pc.createOffer()
+    pc.setLocalDescription(offer)
+  })
 </script>

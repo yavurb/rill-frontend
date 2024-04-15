@@ -7,5 +7,8 @@ import tailwind from "@astrojs/tailwind";
 export default defineConfig({
   integrations: [react(), tailwind({
     applyBaseStyles: false,
-  })]
+  })],
+  site: import.meta.env.SITE_URL,
+  output: "server",
+  adapter: import.meta.env.PROD ? vercel() : nodejs({ mode: "standalone" }),
 });
