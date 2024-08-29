@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 ---
 
 <div>
-  <video id="rill-player" class="aspect-video w-full" autoplay muted>
-  </video>
+  <video id="rill-player" class="aspect-video w-full" autoplay muted> </video>
   <div class="flex justify-center">
     <Button id="broadcast">Broadcast</Button>
     <Button id="join">Join</Button>
@@ -25,45 +24,49 @@ import { Button } from "@/components/ui/button";
     let pc = new RTCPeerConnection({
       iceServers: [
         {
-          urls: 'stun:stun.l.google.com:19302'
-        }
-      ]
+          urls: "stun:stun.l.google.com:19302",
+        },
+      ],
     });
-    pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState);
-    pc.onicecandidate = async event => {
+    pc.oniceconnectionstatechange = (_) => console.log(pc.iceConnectionState);
+    pc.onicecandidate = async (event) => {
       if (event.candidate === null) {
-        sd = btoa(JSON.stringify(pc.localDescription))
-        console.log('sd', sd)
+        sd = btoa(JSON.stringify(pc.localDescription));
+        console.log("sd", sd);
 
-        let response = await fetch("http://localhost:8910/broadcaster", {
+        let response = await fetch("http://localhost:8910/broadcasts", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            'Accept': 'application/json',
+            Accept: "application/json",
           },
           body: JSON.stringify({
-            sdp: sd
-          })
-        })
+            sdp: sd,
+          }),
+        });
 
-        console.log('response', response)
+        console.log("response", response);
 
         if (response.ok) {
-          console.log('serverSD')
-          let serverSD = await response.json();
+          console.log("serverSD");
+          let broadcast = await response.json();
 
-          console.log('serverSD', serverSD)
+          console.log("serverSD", broadcast);
 
-          pc.setRemoteDescription(JSON.parse(atob(serverSD.sdp)));
+          pc.setRemoteDescription(JSON.parse(atob(broadcast.sdp)));
         }
       }
-    }
+    };
 
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    });
+    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-    const video: HTMLVideoElement = document.getElementById("rill-player") as HTMLVideoElement;
+    const video: HTMLVideoElement = document.getElementById(
+      "rill-player",
+    ) as HTMLVideoElement;
 
     if (video === null) {
       throw new Error("Video element not found");
@@ -71,8 +74,8 @@ import { Button } from "@/components/ui/button";
 
     video.srcObject = stream;
 
-    let offer = await pc.createOffer()
-    pc.setLocalDescription(offer)
+    let offer = await pc.createOffer();
+    pc.setLocalDescription(offer);
   });
 
   joinButton?.addEventListener("click", async () => {
@@ -80,42 +83,44 @@ import { Button } from "@/components/ui/button";
     let pc = new RTCPeerConnection({
       iceServers: [
         {
-          urls: 'stun:stun.l.google.com:19302'
-        }
-      ]
+          urls: "stun:stun.l.google.com:19302",
+        },
+      ],
     });
-    pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState);
-    pc.onicecandidate = async event => {
+    pc.oniceconnectionstatechange = (e) => console.log(pc.iceConnectionState);
+    pc.onicecandidate = async (event) => {
       if (event.candidate === null) {
-        let sd = btoa(JSON.stringify(pc.localDescription))
-        console.log('sd', sd)
+        let sd = btoa(JSON.stringify(pc.localDescription));
+        console.log("sd", sd);
 
         let response = await fetch("http://localhost:8910/viewer", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            'Accept': 'application/json',
+            Accept: "application/json",
           },
           body: JSON.stringify({
-            sdp: sd
-          })
-        })
+            sdp: sd,
+          }),
+        });
 
-        console.log('response', response)
+        console.log("response", response);
 
         if (response.ok) {
-          console.log('serverSD')
+          console.log("serverSD");
           let serverSD = await response.json();
 
-          console.log('serverSD', serverSD)
+          console.log("serverSD", serverSD);
 
           pc.setRemoteDescription(JSON.parse(atob(serverSD.sdp)));
         }
       }
-    }
+    };
 
     pc.ontrack = (event) => {
-      const video: HTMLVideoElement = document.getElementById("rill-player") as HTMLVideoElement;
+      const video: HTMLVideoElement = document.getElementById(
+        "rill-player",
+      ) as HTMLVideoElement;
 
       if (video === null) {
         throw new Error("Video element not found");
@@ -124,10 +129,10 @@ import { Button } from "@/components/ui/button";
       video.srcObject = event.streams[0];
       video.autoplay = true;
       video.controls = true;
-    }
+    };
 
-    pc.addTransceiver('video')
-    let offer = await pc.createOffer()
-    pc.setLocalDescription(offer)
-  })
+    pc.addTransceiver("video");
+    let offer = await pc.createOffer();
+    pc.setLocalDescription(offer);
+  });
 </script>

@@ -1,6 +1,6 @@
 ---
-import { removeTrailingSlash } from '@/lib/utils';
-import { ModeToggle } from '@/components/ModeToggle';
+import { removeTrailingSlash } from "@/lib/utils";
+import { ModeToggle } from "@/components/ModeToggle";
 
 const pathname = removeTrailingSlash(Astro.url.pathname);
 
@@ -10,13 +10,16 @@ const paths = [
     navName: "Home",
   },
   {
-    path: "/posts",
-    navName: "Posts",
+    path: "/broadcasts",
+    navName: "Broadcasts",
   },
 ];
 ---
 
-<header class="container sticky top-0 z-50 w-full border-b border-border/40 backdrop-blur flex max-w-screen-2xl gap-2 md:justify-between h-14 items-center font-light" items-center>
+<header
+  class="container sticky top-0 z-50 w-full border-b border-border/40 backdrop-blur flex max-w-screen-2xl gap-2 md:justify-between h-14 items-center font-light"
+  items-center
+>
   <!-- <a href={`mailto:${presentation.mail}`} class="hover:text-neutral-100"
     >{presentation.mail}</a
   > -->

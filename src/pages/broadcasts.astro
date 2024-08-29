@@ -1,21 +1,18 @@
 ---
 import "@/styles/globals.css";
 import Layout from "../layouts/Layout.astro";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-  CardContent,
-} from "@/components/ui/card";
+import BroadcastCard from "@/components/BroadcastCard.astro";
 import fetchApi from "@/lib/fetch-api";
 
 import type Broadcast from "@/interfaces/broadcast";
 
-const broadcasts = await fetchApi<Broadcast>({
-  endpoint: "broadcasts",
-  wrappedByKey: "broadcasts",
-});
+const broadcasts =
+  (await fetchApi<Broadcast[]>({
+    endpoint: "broadcasts",
+    wrappedByKey: "broadcasts",
+  })) || [];
+
+console.log(broadcasts);
 ---
 
 <script is:inline>
@@ -48,14 +45,7 @@ const broadcasts = await fetchApi<Broadcast>({
       {
         broadcasts.length > 0 &&
           broadcasts.map((broadcast) => (
-            <Card id={broadcast.id}>
-              <CardContent>
-                <p>Here goes the broadcast image</p>
-              </CardContent>
-              <CardFooter>
-                <CardTitle>{broadcast.title}</CardTitle>
-              </CardFooter>
-            </Card>
+            <BroadcastCard id={broadcast.id} title={broadcast.title} />
           ))
       }
     </section>
