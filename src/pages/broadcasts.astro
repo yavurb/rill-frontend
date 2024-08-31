@@ -2,15 +2,14 @@
 import "@/styles/globals.css";
 import Layout from "../layouts/Layout.astro";
 import BroadcastCard from "@/components/BroadcastCard.astro";
-import fetchApi from "@/lib/fetch-api";
+import { actions } from "astro:actions";
 
 import type Broadcast from "@/interfaces/broadcast";
 
-const broadcasts =
-  (await fetchApi<Broadcast[]>({
-    endpoint: "broadcasts",
-    wrappedByKey: "broadcasts",
-  })) || [];
+let { data: broadcasts, error: _ } = await actions.getBroadcasts();
+if (!broadcasts) {
+  broadcasts = [{ id: "some-id", title: "Test Broadcast" }];
+}
 
 console.log(broadcasts);
 ---

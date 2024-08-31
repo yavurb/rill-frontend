@@ -90,6 +90,7 @@ import { Button } from "@/components/ui/button";
 <script>
   import { actions } from "astro:actions";
 
+  // TODO: Troubleshoot why the ICE connection state fails to connect in Safari
   const broadcastButton = document.getElementById("broadcast-button");
   broadcastButton?.addEventListener("click", async () => {
     let sd: string = "";
@@ -118,6 +119,7 @@ import { Button } from "@/components/ui/button";
         }
 
         if (sdp) {
+          console.log("here settings remote description", sdp);
           pc.setRemoteDescription(JSON.parse(atob(sdp)));
         }
       }
