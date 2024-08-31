@@ -1,5 +1,13 @@
 ---
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import {
+  CardHeader,
+  Card,
+  CardDescription,
+  CardFooter,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 interface Props {
   id: string;
   title: string;
@@ -8,11 +16,12 @@ interface Props {
 const { id, title } = Astro.props;
 ---
 
-<Card id={id}>
-  <CardContent>
-    <p>Here goes the broadcast image</p>
-  </CardContent>
-  <CardFooter>
+<Card id={id} className="w-full mx-auto">
+  <CardHeader>
     <CardTitle>{title}</CardTitle>
+    <CardDescription> Here goes the broadcast description </CardDescription>
+  </CardHeader>
+  <CardFooter>
+    <Button className="w-full"> Join </Button>
   </CardFooter>
 </Card>

@@ -4,8 +4,6 @@ import Layout from "../layouts/Layout.astro";
 import BroadcastCard from "@/components/BroadcastCard.astro";
 import { actions } from "astro:actions";
 
-import type Broadcast from "@/interfaces/broadcast";
-
 let { data: broadcasts, error: _ } = await actions.getBroadcasts();
 if (!broadcasts) {
   broadcasts = [{ id: "some-id", title: "Test Broadcast" }];
@@ -14,52 +12,24 @@ if (!broadcasts) {
 console.log(broadcasts);
 ---
 
-<script is:inline>
-  const getThemePreference = () => {
-    if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
-      return localStorage.getItem("theme");
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  };
-  const isDark = getThemePreference() === "dark";
-  document.documentElement.classList[isDark ? "add" : "remove"]("dark");
-
-  if (typeof localStorage !== "undefined") {
-    const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.classList.contains("dark");
-      localStorage.setItem("theme", isDark ? "dark" : "light");
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-  }
-</script>
-
 <Layout title="Rill Streaming">
-  <main class="container relative">
-    <section>
-      {
-        broadcasts.length > 0 &&
-          broadcasts.map((broadcast) => (
-            <BroadcastCard id={broadcast.id} title={broadcast.title} />
-          ))
-      }
+  <main class="container my-3">
+    <section id="broadcasts-plaza">
+      <div class="grid grid-cols-4 gap-4 w-full">
+        {
+          broadcasts.length > 0 &&
+            broadcasts.map((broadcast) => (
+              <BroadcastCard id={broadcast.id} title={broadcast.title} />
+            ))
+        }
+      </div>
     </section>
   </main>
 </Layout>
 
 <style>
   main {
-    margin: auto;
-    padding: 1rem;
-    width: 800px;
     max-width: calc(100% - 2rem);
-    color: white;
-    font-size: 20px;
-    line-height: 1.6;
   }
   .astro-a {
     position: absolute;
