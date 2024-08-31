@@ -1,91 +1,156 @@
 ---
-import '@/styles/globals.css';
-import Layout from '../layouts/Layout.astro';
-import VideoPlayer from '@/components/VideoPlayer.astro';
+import "@/styles/globals.css";
+import Layout from "../layouts/Layout.astro";
+import VideoPlayer from "@/components/VideoPlayer.astro";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 ---
 
-<script is:inline>
-	const getThemePreference = () => {
-		if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-			return localStorage.getItem('theme');
-		}
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-	};
-	const isDark = getThemePreference() === 'dark';
-	document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
-
-	if (typeof localStorage !== 'undefined') {
-		const observer = new MutationObserver(() => {
-			const isDark = document.documentElement.classList.contains('dark');
-			localStorage.setItem('theme', isDark ? 'dark' : 'light');
-		});
-		observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-	}
-</script>
-
 <Layout title="Welcome to Astro.">
-	<main class="container relative">
-		<section>
-			<VideoPlayer />
-		</section>
-	</main>
+  <main class="container relative">
+    <section>
+      <div>
+        <VideoPlayer id="rill-player" />
+        <div class="flex w-full max-w-sm items-center space-x-2">
+          <Input
+            id="broadcast-title"
+            type="text"
+            placeholder="Broadcast Title"
+          />
+          <Button id="broadcast-button" type="submit">Broadcast</Button>
+        </div>
+      </div>
+    </section>
+  </main>
 </Layout>
 
 <style>
-	main {
-		margin: auto;
-		padding: 1rem;
-		width: 800px;
-		max-width: calc(100% - 2rem);
-		color: white;
-		font-size: 20px;
-		line-height: 1.6;
-	}
-	.astro-a {
-		position: absolute;
-		top: -32px;
-		left: 50%;
-		transform: translatex(-50%);
-		width: 220px;
-		height: auto;
-		z-index: -1;
-	}
-	h1 {
-		font-size: 4rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		margin-bottom: 1em;
-	}
-	.text-gradient {
-		background-image: var(--accent-gradient);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-size: 400%;
-		background-position: 0%;
-	}
-	.instructions {
-		margin-bottom: 2rem;
-		border: 1px solid rgba(var(--accent-light), 25%);
-		background: linear-gradient(rgba(var(--accent-dark), 66%), rgba(var(--accent-dark), 33%));
-		padding: 1.5rem;
-		border-radius: 8px;
-	}
-	.instructions code {
-		font-size: 0.8em;
-		font-weight: bold;
-		background: rgba(var(--accent-light), 12%);
-		color: rgb(var(--accent-light));
-		border-radius: 4px;
-		padding: 0.3em 0.4em;
-	}
-	.instructions strong {
-		color: rgb(var(--accent-light));
-	}
-	.link-card-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
-		gap: 2rem;
-		padding: 0;
-	}
+  main {
+    margin: auto;
+    padding: 1rem;
+    width: 800px;
+    max-width: calc(100% - 2rem);
+    color: white;
+    font-size: 20px;
+    line-height: 1.6;
+  }
+  .astro-a {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translatex(-50%);
+    width: 220px;
+    height: auto;
+    z-index: -1;
+  }
+  h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    margin-bottom: 1em;
+  }
+  .text-gradient {
+    background-image: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 400%;
+    background-position: 0%;
+  }
+  .instructions {
+    margin-bottom: 2rem;
+    border: 1px solid rgba(var(--accent-light), 25%);
+    background: linear-gradient(
+      rgba(var(--accent-dark), 66%),
+      rgba(var(--accent-dark), 33%)
+    );
+    padding: 1.5rem;
+    border-radius: 8px;
+  }
+  .instructions code {
+    font-size: 0.8em;
+    font-weight: bold;
+    background: rgba(var(--accent-light), 12%);
+    color: rgb(var(--accent-light));
+    border-radius: 4px;
+    padding: 0.3em 0.4em;
+  }
+  .instructions strong {
+    color: rgb(var(--accent-light));
+  }
+  .link-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+    gap: 2rem;
+    padding: 0;
+  }
 </style>
+
+<script>
+  let broadcastButton = document.getElementById("broadcast-button");
+
+  if (broadcastButton === null) {
+    throw new Error("Broadcast button not found");
+  }
+
+  broadcastButton.addEventListener("click", async () => {
+    console.log("Broadcasting...");
+    let sd: string = "";
+    let pc = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: "stun:stun.l.google.com:19302",
+        },
+      ],
+    });
+    pc.oniceconnectionstatechange = (_) => console.log(pc.iceConnectionState);
+    pc.onicecandidate = async (event) => {
+      if (event.candidate === null) {
+        sd = btoa(JSON.stringify(pc.localDescription));
+        console.log("sd", sd);
+
+        let response = await fetch("http://localhost:8910/broadcasts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            sdp: sd,
+          }),
+        });
+
+        console.log("response", response);
+
+        if (response.ok) {
+          console.log("serverSD");
+          let broadcast = await response.json();
+
+          console.log("serverSD", broadcast);
+
+          pc.setRemoteDescription(JSON.parse(atob(broadcast.sdp)));
+        }
+      }
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    });
+    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+
+    const video: HTMLVideoElement = document.getElementById(
+      "rill-player",
+    ) as HTMLVideoElement;
+
+    if (video === null) {
+      throw new Error("Video element not found");
+    }
+
+    video.srcObject = stream;
+
+    let offer = await pc.createOffer();
+    pc.setLocalDescription(offer);
+  });
+</script>
