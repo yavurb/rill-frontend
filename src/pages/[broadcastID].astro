@@ -1,0 +1,79 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import VideoPlayer from "@/components/VideoPlayer.astro";
+import { actions } from "astro:actions";
+
+const { broadcastID = "" } = Astro.params;
+
+const { data: broadcast, error } = await actions.getBroadcast(broadcastID);
+if (error || !broadcast) {
+  // TODO: Redirect to 404
+  console.error("Error getting broadcast", error);
+}
+---
+
+<Layout title={broadcast?.title || "Viewing..."}>
+  <main class="container relative">
+    <section>
+      <div>
+        <VideoPlayer id="rill-player" data-broadcastID={broadcastID} />
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script>
+  import { actions } from "astro:actions";
+
+  const video: HTMLVideoElement = document.getElementById(
+    "rill-player",
+  ) as HTMLVideoElement;
+
+  if (video === null) {
+    throw new Error("Video element not found");
+  }
+
+  console.log("Joining...");
+
+  const broadcastID = video.dataset.broadcastID;
+  if (!broadcastID) {
+    // TODO: Redirect to 404
+    throw new Error("Broadcast ID not found");
+  }
+
+  let pc = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302",
+      },
+    ],
+  });
+  pc.oniceconnectionstatechange = (_) => console.log(pc.iceConnectionState);
+  pc.onicecandidate = async (event) => {
+    if (event.candidate === null) {
+      const sd = btoa(JSON.stringify(pc.localDescription));
+
+      const { data: sdp, error } = await actions.joinBroadcast({
+        broadcastID,
+        sdp: sd,
+      });
+      if (error || !sdp) {
+        console.error("Error joining broadcast", error);
+      }
+
+      if (sdp) {
+        pc.setRemoteDescription(JSON.parse(atob(sdp)));
+      }
+    }
+  };
+
+  pc.ontrack = (event) => {
+    video.srcObject = event.streams[0];
+    video.autoplay = true;
+    video.controls = true;
+  };
+
+  pc.addTransceiver("video");
+  let offer = await pc.createOffer();
+  pc.setLocalDescription(offer);
+</script>

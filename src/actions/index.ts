@@ -54,6 +54,27 @@ const getBroadcasts = defineAction({
   },
 });
 
+const getBroadcast = defineAction({
+  input: z.string(),
+  handler: async (broadcastID) => {
+    const response = await fetch(`${SERVER_URL}/broadcasts/${broadcastID}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    // TODO: Handle error
+    if (response.ok) {
+      const broadcast = (await response.json()) as Broadcast;
+      return broadcast;
+    }
+
+    return null;
+  },
+});
+
 const joinBroadcast = defineAction({
   input: z.object({
     broadcastID: z.string(),
@@ -85,5 +106,6 @@ const joinBroadcast = defineAction({
 export const server = {
   createBroadcast,
   getBroadcasts,
+  getBroadcast,
   joinBroadcast,
 }
