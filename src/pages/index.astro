@@ -88,14 +88,10 @@ import { Button } from "@/components/ui/button";
 </style>
 
 <script>
-  let broadcastButton = document.getElementById("broadcast-button");
+  import { actions } from "astro:actions";
 
-  if (broadcastButton === null) {
-    throw new Error("Broadcast button not found");
-  }
-
-  broadcastButton.addEventListener("click", async () => {
-    console.log("Broadcasting...");
+  const broadcastButton = document.getElementById("broadcast-button");
+  broadcastButton?.addEventListener("click", async () => {
     let sd: string = "";
     let pc = new RTCPeerConnection({
       iceServers: [
@@ -110,26 +106,19 @@ import { Button } from "@/components/ui/button";
         sd = btoa(JSON.stringify(pc.localDescription));
         console.log("sd", sd);
 
-        let response = await fetch("http://localhost:8910/broadcasts", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            sdp: sd,
-          }),
+        const title = document.getElementById(
+          "broadcast-title",
+        ) as HTMLInputElement;
+        const { data: sdp, error } = await actions.createBroadcast({
+          title: title.value,
+          sdp: sd,
         });
+        if (error || !sdp) {
+          console.error("Error creating broadcast", error);
+        }
 
-        console.log("response", response);
-
-        if (response.ok) {
-          console.log("serverSD");
-          let broadcast = await response.json();
-
-          console.log("serverSD", broadcast);
-
-          pc.setRemoteDescription(JSON.parse(atob(broadcast.sdp)));
+        if (sdp) {
+          pc.setRemoteDescription(JSON.parse(atob(sdp)));
         }
       }
     };
