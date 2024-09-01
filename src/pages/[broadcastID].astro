@@ -1,4 +1,5 @@
 ---
+import "@/styles/globals.css";
 import Layout from "@/layouts/Layout.astro";
 import VideoPlayer from "@/components/VideoPlayer.astro";
 import { actions } from "astro:actions";
@@ -9,6 +10,8 @@ const { data: broadcast, error } = await actions.getBroadcast(broadcastID);
 if (error || !broadcast) {
   // TODO: Redirect to 404
   console.error("Error getting broadcast", error);
+
+  return Astro.redirect("/broadcasts");
 }
 ---
 
@@ -16,7 +19,7 @@ if (error || !broadcast) {
   <main class="container relative">
     <section>
       <div>
-        <VideoPlayer id="rill-player" data-broadcastID={broadcastID} />
+        <VideoPlayer id="rill-player" data-broadcast={`${broadcast.id}`} />
       </div>
     </section>
   </main>
@@ -25,17 +28,14 @@ if (error || !broadcast) {
 <script>
   import { actions } from "astro:actions";
 
-  const video: HTMLVideoElement = document.getElementById(
-    "rill-player",
-  ) as HTMLVideoElement;
-
+  const video = document.getElementById("rill-player") as HTMLVideoElement;
   if (video === null) {
     throw new Error("Video element not found");
   }
 
   console.log("Joining...");
 
-  const broadcastID = video.dataset.broadcastID;
+  const broadcastID = video.dataset.broadcast;
   if (!broadcastID) {
     // TODO: Redirect to 404
     throw new Error("Broadcast ID not found");

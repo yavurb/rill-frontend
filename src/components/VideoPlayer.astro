@@ -3,9 +3,10 @@ interface Props {
   id: string;
 }
 
-const { id } = Astro.props;
+const { id, ...attributes } = Astro.props;
 ---
 
 <div>
-  <video id={id} class="aspect-video w-full" autoplay muted> </video>
+  <video id={id} class="aspect-video w-full" autoplay muted {...attributes}>
+  </video>
 </div>
