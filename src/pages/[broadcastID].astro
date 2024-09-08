@@ -26,7 +26,15 @@ if (error || !broadcast) {
 </Layout>
 
 <script>
-  import { actions } from "astro:actions";
+  const ws = new WebSocket("ws://localhost:8910/broadcasts/ws");
+
+  ws.onopen = () => {
+    console.log("Connected to WebSocket");
+  };
+
+  ws.onclose = () => {
+    console.log("Disconnected from WebSocket");
+  };
 
   const video = document.getElementById("rill-player") as HTMLVideoElement;
   if (video === null) {
@@ -48,22 +56,32 @@ if (error || !broadcast) {
       },
     ],
   });
+
+  ws.onmessage = (event) => {
+    const eventData = event.data as string;
+    const eventObject: Record<string, any> = JSON.parse(eventData);
+
+    if (eventObject.event === "new-viewer") {
+      const { sdp } = eventObject.data;
+      console.log(sdp);
+      pc.setRemoteDescription(JSON.parse(atob(sdp)));
+    }
+  };
+
   pc.oniceconnectionstatechange = (_) => console.log(pc.iceConnectionState);
   pc.onicecandidate = async (event) => {
     if (event.candidate === null) {
       const sd = btoa(JSON.stringify(pc.localDescription));
 
-      const { data: sdp, error } = await actions.joinBroadcast({
-        broadcastID,
-        sdp: sd,
-      });
-      if (error || !sdp) {
-        console.error("Error joining broadcast", error);
-      }
+      const payload = {
+        event: "new-viewer",
+        data: {
+          broadcast_id: broadcastID,
+          sdp: sd,
+        },
+      };
 
-      if (sdp) {
-        pc.setRemoteDescription(JSON.parse(atob(sdp)));
-      }
+      ws.send(JSON.stringify(payload));
     }
   };
 
