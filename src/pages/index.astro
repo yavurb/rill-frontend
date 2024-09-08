@@ -31,6 +31,16 @@ import { Button } from "@/components/ui/button";
   // TODO: Troubleshoot why the ICE connection state fails to connect in Safari
   const broadcastButton = document.getElementById("broadcast-button");
   broadcastButton?.addEventListener("click", async () => {
+    const ws = new WebSocket("ws://localhost:8910/broadcasts/ws");
+
+    ws.onopen = () => {
+      console.log("Connected to WebSocket");
+    };
+
+    ws.onclose = () => {
+      console.log("Disconnected from WebSocket");
+    };
+
     let sd: string = "";
     let pc = new RTCPeerConnection({
       iceServers: [
@@ -39,27 +49,32 @@ import { Button } from "@/components/ui/button";
         },
       ],
     });
+
+    ws.onmessage = (event) => {
+      const eventData = event.data as string;
+      const eventObject: Record<string, any> = JSON.parse(eventData);
+
+      if (eventObject.event === "new-broadcast") {
+        const { sdp } = eventObject.data;
+        console.log(sdp);
+        pc.setRemoteDescription(JSON.parse(atob(sdp)));
+      }
+    };
+
     pc.oniceconnectionstatechange = (_) => console.log(pc.iceConnectionState);
     pc.onicecandidate = async (event) => {
       if (event.candidate === null) {
         sd = btoa(JSON.stringify(pc.localDescription));
-        console.log("sd", sd);
 
         const title = document.getElementById(
           "broadcast-title",
         ) as HTMLInputElement;
-        const { data: sdp, error } = await actions.createBroadcast({
-          title: title.value,
-          sdp: sd,
-        });
-        if (error || !sdp) {
-          console.error("Error creating broadcast", error);
-        }
+        const payload = {
+          event: "new-broadcast",
+          data: { title: title.value, sdp: sd },
+        };
 
-        if (sdp) {
-          console.log("here settings remote description", sdp);
-          pc.setRemoteDescription(JSON.parse(atob(sdp)));
-        }
+        ws.send(JSON.stringify(payload));
       }
     };
 
