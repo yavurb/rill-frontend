@@ -26,7 +26,7 @@ if (error || !broadcast) {
 </Layout>
 
 <script>
-  const ws = new WebSocket(`${import.meta.env.WS_BACKEND_URL}/broadcasts/ws`);
+  const ws = new WebSocket(`${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`);
 
   ws.onopen = () => {
     console.log("Connected to WebSocket");
