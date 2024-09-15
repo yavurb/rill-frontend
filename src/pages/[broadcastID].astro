@@ -26,7 +26,9 @@ if (error || !broadcast) {
 </Layout>
 
 <script>
-  const ws = new WebSocket(`${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`);
+  const ws = new WebSocket(
+    `${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`,
+  );
 
   ws.onopen = () => {
     console.log("Connected to WebSocket");
@@ -49,12 +51,15 @@ if (error || !broadcast) {
     throw new Error("Broadcast ID not found");
   }
 
+  const iceServers: RTCIceServer[] = [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+  ];
   let pc = new RTCPeerConnection({
-    iceServers: [
-      {
-        urls: "stun:stun.l.google.com:19302",
-      },
-    ],
+    iceServers: iceServers,
   });
 
   ws.onmessage = (event) => {

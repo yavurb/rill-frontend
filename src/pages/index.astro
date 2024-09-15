@@ -29,7 +29,9 @@ import { Button } from "@/components/ui/button";
   // TODO: Troubleshoot why the ICE connection state fails to connect in Safari
   const broadcastButton = document.getElementById("broadcast-button");
   broadcastButton?.addEventListener("click", async () => {
-    const ws = new WebSocket(`${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`);
+    const ws = new WebSocket(
+      `${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`,
+    );
 
     ws.onopen = () => {
       console.log("Connected to WebSocket");
@@ -40,13 +42,17 @@ import { Button } from "@/components/ui/button";
     };
 
     let sd: string = "";
+    const iceServers: RTCIceServer[] = [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" },
+      { urls: "stun:stun2.l.google.com:19302" },
+      { urls: "stun:stun3.l.google.com:19302" },
+      { urls: "stun:stun4.l.google.com:19302" },
+    ];
     let pc = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302",
-        },
-      ],
+      iceServers: iceServers,
     });
+    pc.onicecandidateerror = (event) => console.log(event);
 
     ws.onmessage = (event) => {
       const eventData = event.data as string;
@@ -61,8 +67,13 @@ import { Button } from "@/components/ui/button";
 
     pc.oniceconnectionstatechange = (_) => console.log(pc.iceConnectionState);
     pc.onicecandidate = async (event) => {
+      console.log("icecandidate", event);
       if (event.candidate === null) {
+        console.log("candidate: ", event.candidate);
+
+        console.log("post session", pc.localDescription);
         sd = btoa(JSON.stringify(pc.localDescription));
+        console.log("session description: ", sd);
 
         const title = document.getElementById(
           "broadcast-title",
