@@ -1,0 +1,27 @@
+---
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Video } from "lucide-react";
+---
+
+<Card className="w-full max-w-md mx-auto mt-8">
+  <CardHeader>
+    <CardTitle>No broadcasts available</CardTitle>
+    <CardDescription
+      >Start your first broadcast or check back later for new content.</CardDescription
+    >
+  </CardHeader>
+  <CardContent>
+    <a href="/">
+      <Button className="w-full">
+        <Video className="mr-2 h-4 w-4" /> Create New Broadcast
+      </Button>
+    </a>
+  </CardContent>
+</Card>

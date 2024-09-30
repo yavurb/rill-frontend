@@ -2,31 +2,29 @@
 import "@/styles/globals.css";
 import Layout from "../layouts/Layout.astro";
 import BroadcastCard from "@/components/BroadcastCard.astro";
+import NoBroadcasts from "@/components/no-broadcasts.astro";
 import { actions } from "astro:actions";
 
 let { data: broadcasts, error: _ } = await actions.getBroadcasts();
 if (!broadcasts) {
-  broadcasts = [
-    { id: "some-id", title: "Test Broadcast" },
-    { id: "some-id", title: "Test Broadcast" },
-    { id: "some-id", title: "Test Broadcast" },
-  ];
+  broadcasts = [];
 }
 ---
 
 <Layout title="Broadcasts">
   <main class="container my-3 max-w-[calc(100%-2rem)]">
     <section id="broadcasts-plaza">
-      <div
-        class="grid grid-cols-1 gap-4 w-full md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-      >
-        {
-          broadcasts.length > 0 &&
-            broadcasts.map((broadcast) => (
+      {
+        broadcasts.length === 0 ? (
+          <NoBroadcasts />
+        ) : (
+          <div class="grid grid-cols-1 gap-4 w-full md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {broadcasts.map((broadcast) => (
               <BroadcastCard id={broadcast.id} title={broadcast.title} />
-            ))
-        }
-      </div>
+            ))}
+          </div>
+        )
+      }
     </section>
   </main>
 </Layout>
