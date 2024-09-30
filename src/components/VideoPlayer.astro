@@ -6,7 +6,8 @@ interface Props {
 const { id, ...attributes } = Astro.props;
 ---
 
-<div>
+<div class="border rounded shadow-2xl shadow-indigo-500/10">
   <video id={id} class="aspect-video w-full" autoplay muted {...attributes}>
+    Your browser does not support the video tag.
   </video>
 </div>

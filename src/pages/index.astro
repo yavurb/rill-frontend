@@ -7,19 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 ---
 
-<Layout title="Welcome to Astro.">
+<Layout title="Rill">
   <main class="container relative">
     <section>
-      <div>
-        <VideoPlayer id="rill-player" />
-        <div class="flex w-full max-w-sm items-center space-x-2">
+      <div class="flex flex-col gap-4">
+        <div class="flex w-full max-w-sm items-center space-x-2 m-auto">
           <Input
             id="broadcast-title"
             type="text"
             placeholder="Broadcast Title"
+            className="w-full"
           />
           <Button id="broadcast-button" type="submit">Broadcast</Button>
         </div>
+        <VideoPlayer id="rill-player" />
       </div>
     </section>
   </main>
