@@ -29,10 +29,29 @@ import { Button } from "@/components/ui/button";
 <script>
   // TODO: Troubleshoot why the ICE connection state fails to connect in Safari
   const broadcastButton = document.getElementById("broadcast-button");
+
+  function connectWebSocket(url: string): Promise<WebSocket> {
+    return new Promise((resolve, reject) => {
+      const socket = new WebSocket(url);
+
+      socket.onopen = function () {
+        console.log("Connected to WebSocket");
+        resolve(socket);
+      };
+
+      socket.onclose = () => {
+        console.log("Disconnected from WebSocket");
+      };
+
+      socket.onerror = function (error) {
+        reject(error);
+      };
+    });
+  }
+
   broadcastButton?.addEventListener("click", async () => {
-    const ws = new WebSocket(
-      `${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`,
-    );
+    const URL = `${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`;
+    const ws = await connectWebSocket(URL);
 
     ws.onopen = () => {
       console.log("Connected to WebSocket");
