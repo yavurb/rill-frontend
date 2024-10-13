@@ -53,23 +53,15 @@ import { Button } from "@/components/ui/button";
     const URL = `${import.meta.env.PUBLIC_WS_BACKEND_URL}/broadcasts/ws`;
     const ws = await connectWebSocket(URL);
 
-    ws.onopen = () => {
-      console.log("Connected to WebSocket");
-
-      const title = document.getElementById(
-        "broadcast-title",
-      ) as HTMLInputElement;
-      const payload = {
-        event: "new-broadcast",
-        data: { title: title.value },
-      };
-
-      ws.send(JSON.stringify(payload));
+    const title = document.getElementById(
+      "broadcast-title",
+    ) as HTMLInputElement;
+    const payload = {
+      event: "new-broadcast",
+      data: { title: title.value },
     };
 
-    ws.onclose = () => {
-      console.log("Disconnected from WebSocket");
-    };
+    ws.send(JSON.stringify(payload));
 
     let sd: string = "";
     const iceServers: RTCIceServer[] = [
